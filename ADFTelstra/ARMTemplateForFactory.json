@@ -1,0 +1,717 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "ADFTelstra"
+		},
+		"AzureDataLakeStorage_dest_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'AzureDataLakeStorage_dest'"
+		},
+		"Az_key_vault_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://TelstrakeyvltN.vault.azure.net/"
+		},
+		"AzureDataLakeStorage_dest_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://storageactdatalk.dfs.core.windows.net"
+		},
+		"Linked_AzureSQL_properties_typeProperties_connectionString_secretName": {
+			"type": "string",
+			"defaultValue": "SQLConnection"
+		},
+		"RssFeed_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://www.fuelwatch.wa.gov.au/fuelwatch/fuelWatchRSS"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/PL_RSS_Lake_SQL')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Loading Data from RSS Feed to Lake Gen2",
+				"activities": [
+					{
+						"name": "RSS_To_lake",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Destination",
+								"value": "datalakestore/Raw/FuelWatch/2022-03-23/feed.parquet"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "XmlSource",
+								"storeSettings": {
+									"type": "HttpReadSettings",
+									"requestMethod": "GET"
+								},
+								"formatSettings": {
+									"type": "XmlReadSettings",
+									"validationMode": "none",
+									"namespaces": true
+								}
+							},
+							"sink": {
+								"type": "ParquetSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "ParquetWriteSettings"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"path": "[['title']"
+										},
+										"sink": {
+											"name": "rss_channel_item'][0]['title",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['description']"
+										},
+										"sink": {
+											"name": "rss_channel_item'][0]['description",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['brand']"
+										},
+										"sink": {
+											"name": "brand",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['date']"
+										},
+										"sink": {
+											"name": "date",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['price']"
+										},
+										"sink": {
+											"name": "price",
+											"type": "Double"
+										}
+									},
+									{
+										"source": {
+											"path": "[['trading-name']"
+										},
+										"sink": {
+											"name": "trading-name",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['location']"
+										},
+										"sink": {
+											"name": "location",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['address']"
+										},
+										"sink": {
+											"name": "address",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['phone']"
+										},
+										"sink": {
+											"name": "phone",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['latitude']"
+										},
+										"sink": {
+											"name": "latitude",
+											"type": "Double"
+										}
+									},
+									{
+										"source": {
+											"path": "[['longitude']"
+										},
+										"sink": {
+											"name": "longitude",
+											"type": "Double"
+										}
+									},
+									{
+										"source": {
+											"path": "[['site-features']"
+										},
+										"sink": {
+											"name": "site-features",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "$['rss']['channel']['title']"
+										},
+										"sink": {
+											"name": "rss_channel_title",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "$['rss']['channel']['ttl']"
+										},
+										"sink": {
+											"name": "ttl",
+											"type": "Int64"
+										}
+									},
+									{
+										"source": {
+											"path": "$['rss']['channel']['link']"
+										},
+										"sink": {
+											"name": "rss_channel_link",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "$['rss']['channel']['description']"
+										},
+										"sink": {
+											"name": "rss_channel_description",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "$['rss']['channel']['language']"
+										},
+										"sink": {
+											"name": "language",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "$['rss']['channel']['copyright']"
+										},
+										"sink": {
+											"name": "copyright",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "$['rss']['channel']['lastBuildDate']"
+										},
+										"sink": {
+											"name": "lastBuildDate",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "$['rss']['channel']['image']['url']"
+										},
+										"sink": {
+											"name": "url",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "$['rss']['channel']['image']['title']"
+										},
+										"sink": {
+											"name": "rss_channel_image_title",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "$['rss']['channel']['image']['link']"
+										},
+										"sink": {
+											"name": "rss_channel_image_link",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "$['rss']['@version']"
+										},
+										"sink": {
+											"name": "@@version",
+											"type": "Double"
+										}
+									}
+								],
+								"collectionReference": "$['rss']['channel']['item']",
+								"mapComplexValuesToString": false
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "RSSFeed",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "LakeStorage",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "lake to sql",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "RSS_To_lake",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "ParquetSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"wildcardFileName": "*.parquet",
+									"enablePartitionDiscovery": false
+								}
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"writeBehavior": "insert",
+								"sqlWriterUseTableLock": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "brand",
+											"type": "String",
+											"physicalType": "UTF8"
+										},
+										"sink": {
+											"name": "brand",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									},
+									{
+										"source": {
+											"name": "date",
+											"type": "String",
+											"physicalType": "UTF8"
+										},
+										"sink": {
+											"name": "date",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									},
+									{
+										"source": {
+											"name": "price",
+											"type": "Double",
+											"physicalType": "DOUBLE"
+										},
+										"sink": {
+											"name": "price",
+											"type": "Decimal",
+											"physicalType": "decimal",
+											"scale": 2,
+											"precision": 18
+										}
+									},
+									{
+										"source": {
+											"name": "trading-name",
+											"type": "String",
+											"physicalType": "UTF8"
+										},
+										"sink": {
+											"name": "tradingName",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									},
+									{
+										"source": {
+											"name": "location",
+											"type": "String",
+											"physicalType": "UTF8"
+										},
+										"sink": {
+											"name": "location",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									},
+									{
+										"source": {
+											"name": "address",
+											"type": "String",
+											"physicalType": "UTF8"
+										},
+										"sink": {
+											"name": "address",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									},
+									{
+										"source": {
+											"name": "phone",
+											"type": "String",
+											"physicalType": "UTF8"
+										},
+										"sink": {
+											"name": "phone",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									},
+									{
+										"source": {
+											"name": "latitude",
+											"type": "Double",
+											"physicalType": "DOUBLE"
+										},
+										"sink": {
+											"name": "latitude",
+											"type": "Decimal",
+											"physicalType": "decimal",
+											"scale": 6,
+											"precision": 18
+										}
+									},
+									{
+										"source": {
+											"name": "longitude",
+											"type": "Double",
+											"physicalType": "DOUBLE"
+										},
+										"sink": {
+											"name": "Longitude",
+											"type": "Decimal",
+											"physicalType": "decimal",
+											"scale": 6,
+											"precision": 18
+										}
+									},
+									{
+										"source": {
+											"name": "site-features",
+											"type": "String",
+											"physicalType": "UTF8"
+										},
+										"sink": {
+											"name": "SiteFeatures",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									}
+								],
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "LakeStorage",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "AzureSql",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "Dim_fact table insert",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "lake to sql",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[dw].[etl_Fuelprice_attribute_insert]"
+						},
+						"linkedServiceName": {
+							"referenceName": "Linked_AzureSQL",
+							"type": "LinkedServiceReference"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2022-03-25T07:23:40Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/RSSFeed')]",
+				"[concat(variables('factoryId'), '/datasets/LakeStorage')]",
+				"[concat(variables('factoryId'), '/datasets/AzureSql')]",
+				"[concat(variables('factoryId'), '/linkedServices/Linked_AzureSQL')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureSql')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "Linked_AzureSQL",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "brand",
+						"type": "varchar"
+					},
+					{
+						"name": "date",
+						"type": "varchar"
+					},
+					{
+						"name": "price",
+						"type": "varchar"
+					},
+					{
+						"name": "tradingName",
+						"type": "varchar"
+					},
+					{
+						"name": "location",
+						"type": "varchar"
+					},
+					{
+						"name": "address",
+						"type": "varchar"
+					},
+					{
+						"name": "phone",
+						"type": "varchar"
+					},
+					{
+						"name": "latitude",
+						"type": "varchar"
+					},
+					{
+						"name": "SiteFeatures",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "tempstage",
+					"table": "FuelPrices"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/Linked_AzureSQL')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LakeStorage')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorage_dest",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@concat('feed_',formatDateTime(convertTimeZone(utcNow(),'UTC','Eastern Standard Time'),'yyyy-MM-dd'), '.parquet')\n",
+							"type": "Expression"
+						},
+						"folderPath": "Raw/FuelWatch",
+						"fileSystem": "datalakestore"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage_dest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/RSSFeed')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "RssFeed",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Xml",
+				"typeProperties": {
+					"location": {
+						"type": "HttpServerLocation"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/RssFeed')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Az_key_vault')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureKeyVault",
+				"typeProperties": {
+					"baseUrl": "[parameters('Az_key_vault_properties_typeProperties_baseUrl')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureDataLakeStorage_dest')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('AzureDataLakeStorage_dest_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('AzureDataLakeStorage_dest_accountKey')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Linked_AzureSQL')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"connectionString": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "Az_key_vault",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "[parameters('Linked_AzureSQL_properties_typeProperties_connectionString_secretName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/Az_key_vault')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/RssFeed')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "HttpServer",
+				"typeProperties": {
+					"url": "[parameters('RssFeed_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": true,
+					"authenticationType": "Anonymous"
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}

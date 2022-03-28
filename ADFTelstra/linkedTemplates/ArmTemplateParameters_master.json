@@ -1,0 +1,30 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "ADFTelstra"
+		},
+		"AzureDataLakeStorage_dest_accountKey": {
+			"value": ""
+		},
+		"Az_key_vault_properties_typeProperties_baseUrl": {
+			"value": "https://TelstrakeyvltN.vault.azure.net/"
+		},
+		"AzureDataLakeStorage_dest_properties_typeProperties_url": {
+			"value": "https://storageactdatalk.dfs.core.windows.net"
+		},
+		"Linked_AzureSQL_properties_typeProperties_connectionString_secretName": {
+			"value": "SQLConnection"
+		},
+		"RssFeed_properties_typeProperties_url": {
+			"value": "https://www.fuelwatch.wa.gov.au/fuelwatch/fuelWatchRSS"
+		},
+		"containerUri": {
+			"value": ""
+		},
+		"containerSasToken": {
+			"value": ""
+		}
+	}
+}
