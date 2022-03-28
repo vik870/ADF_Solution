@@ -1,0 +1,9 @@
+{
+	"name": "ADFTelstra",
+	"location": "australiaeast",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "b1562c23-71f2-48be-acd4-e2945a4c0eb6",
+		"tenantId": "0aebd0a5-169b-41cc-803d-6ad4822595d6"
+	}
+}

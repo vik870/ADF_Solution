@@ -1,0 +1,17 @@
+{
+	"name": "RSSFeed",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "RssFeed",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Xml",
+		"typeProperties": {
+			"location": {
+				"type": "HttpServerLocation"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

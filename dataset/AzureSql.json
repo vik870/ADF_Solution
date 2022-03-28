@@ -1,0 +1,54 @@
+{
+	"name": "AzureSql",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Linked_AzureSQL",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "brand",
+				"type": "varchar"
+			},
+			{
+				"name": "date",
+				"type": "varchar"
+			},
+			{
+				"name": "price",
+				"type": "varchar"
+			},
+			{
+				"name": "tradingName",
+				"type": "varchar"
+			},
+			{
+				"name": "location",
+				"type": "varchar"
+			},
+			{
+				"name": "address",
+				"type": "varchar"
+			},
+			{
+				"name": "phone",
+				"type": "varchar"
+			},
+			{
+				"name": "latitude",
+				"type": "varchar"
+			},
+			{
+				"name": "SiteFeatures",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "tempstage",
+			"table": "FuelPrices"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
